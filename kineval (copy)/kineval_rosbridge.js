@@ -1,14 +1,6 @@
 ros = new ROSLIB.Ros({
-    //url : 'ws://192.168.1.150:9090' //Kuri-Chonbo
-    //url : 'ws://192.168.1.126:9090' //progress-5 laptop
-    url: 'ws://192.168.1.181:9090' //progress-3 laptop
-    //url : 'ws://fetch7:9090'
-    //url : 'ws://fetch7.lan:9090'
-    //url : 'ws://logan-G752VT:9090'
-    //url : 'ws://fetch18.lan:9090'
-    //url : 'ws://fetch18.lan:9092'
-    //url : 'ws://fetch7.lan:9092'
-    //url : 'ws://192.168.1.118:9090'
+
+    url: 'ws://[enter URLof laptop]:9090' //progress-3 laptop
 }); 
 
 ros.on('connection', function() {
@@ -23,53 +15,10 @@ ros.on('close', function() {
     console.log('kineval: roslib: connection to websocket server closed.');
 });
 
-
-//KE : add this to kineval object
-/*listener = new ROSLIB.Topic({
-    ros : ros,
-    name : '/joint_states_throttle',
-    //name : '/joint_states',
-    messageType : 'sensor_msgs/JointState'
-}); 
-    // run topic throttling on ros backend
-    // rosrun topic_tools throttle messages joint_states 2
-    //name : '/joint_states',
-
-listener.subscribe(function(message) {
-    textbar.innerHTML = 'joint angles: '+'<br>';
-    for (var i=0;i<message.name.length;i++) {
-        if (typeof robot.joints[message.name[i]] !== 'undefined')
-            robot.joints[message.name[i]].angle = message.position[i];
-            //console.log('kineval: roslib: set '+message.name[i]+' to '+message.position[i]);
-            textbar.innerHTML += message.name[i]+' to '+message.position[i]+'<br>';
-    }
-    //console.log('kineval: roslib: new message at '+message.header.stamp.secs+'.'+message.header.stamp.nsecs);
-    textbar.innerHTML += message.header.stamp.secs+'.'+message.header.stamp.nsecs;
-});
-
-rosManip = new ROSLIB.Topic({
-   ros : ros,
-   name : '/fetch_grasp',
-   messageType : 'fetch_manipulation_pipeline/fetchGrasp'
-});
-
-
-// KE clean up topic formatting
-rosManipGrasp = new ROSLIB.Message({
-    "normal":[{"x":0.3, "y": 0.5, "z":0.6}],
-    "principalAxis":[{"x": 0.6, "y": 0.7, "z": 0.8}],
-    "point":[{"x": 0.9, "y": 1.0, "z": 1.1}],
-    "objnum":[{"data":1}] 
-});
-
-//  "msg": { "normal":[{"x":0.3, "y": 0.5, "z":0.6}],"principalAxis":[{"x": 0.6, "y": 0.7, "z": 0.8}],"point":[{"x": 0.9, "y": 1.0, "z": 1.1}],"objnum":[{"data":1}]}
-
-*/
-
 ////////////////////////////////////////////////////////////////
 rosCmdVel = new ROSLIB.Topic({
    ros : ros,
-   name : '/mobile_base/commands/velocity', //'/turtle1/cmd_vel',
+   name : '/mobile_base/commands/velocity',
    messageType : 'geometry_msgs/Twist'
 });
 
@@ -238,7 +187,6 @@ function scanMatrix(odomPosition){
 }
 
 function matrix(coords, odomPosition, conversion, scan) {
-    //var t = Math.acos(odomPosition.wPos)*2
     //console.log(`This is my scan ${JSON.stringify(scan)}`)
     //console.log("These are the results of conversion : " + JSON.stringify(conversion));
     var t = Math.asin(odomPosition.zPos)*2;
