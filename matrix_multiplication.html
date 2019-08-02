@@ -1,0 +1,68 @@
+<html>
+<head>
+    <meta charset = "UTF-8">
+</head>
+<body onload = "matrix()">
+<!--<canvas id="myCanvas" width="200" height="300" style = "border: 1px solid black"></canvas>-->
+    <script src ="/home/logan/kineval-stencil/plot5.html">
+
+    //function Main(){
+        //var triangle = draw(40, 50, 80, 50, 60, 50,"red");
+       //matrix(coords, Math.PI);
+        //animate();
+        //}
+    /*function animate(){
+            requestAnimationFrame(animate);
+            draw();
+        }*/
+    //function draw(p1x, p1y, p2x, p2y, p3x, p3y, color){
+        /*this.p1x = p1x;
+        this.p2x = p2x;
+        this.p3x = p3x;
+        this.p1y = p1y;
+        this.p2y = p2y;
+        this.p3y = p3y;*/
+        //var canvas = document.getElementById("myCanvas");
+        //var ctx = canvas.getContext("2d");
+        //ctx.save();
+        //ctx.beginPath();
+        //ctx.moveTo(p1y, p1y);
+        //ctx.lineTo(p2x, p2y);
+        //ctx.lineTo(p3x, p3y);
+        //ctx.fillStyle = this.color;
+        //ctx.fill();
+       // ctx.restore();
+        //console.log("sanity check");
+    //}
+            //matrix(13.229, 0, 3.969, -6.615, -3.969, -6.615, -3.969, 6.615, 3.969, 6.615, Math.PI) {
+
+        function matrix(coords, t) {
+
+            const A = [ [Math.cos(t), -Math.sin(t), 3],
+                        [Math.sin(t), Math.cos(t), 3],
+                        [0,0,1],
+                        ];
+            const B =[ [coords.p1x, coords.p2x, coords.p3x, coords.p4x, coords.p5x],
+                        [coords.p1y, coords.p2y, coords.p3y, coords.p4y, coords.p5y],
+                        [1,1,1,1,1],
+                        ];
+            C = [];
+
+                for (var i =0; i< A.length; i++){
+                    C[i] = [];
+                    for (var j =0 ; j< B[0].length; j++){
+                        //console.log(A[i][j]);
+                        C[i][j] = 0;
+                        for (var y = 0 ; y < A[0].length ; y++){
+                            C[i][j] += A[i][y] * B[y][j];
+                        }
+                        console.log(C[i][j] + "[" + i + "," +j+"] is in the resultant matrix");
+                    }
+                }
+                console.log(JSON.stringify(C)); //to print out resultant matrix in array format
+                matrix = C;
+                return matrix;
+        }
+    </script>
+</body>
+</html>
