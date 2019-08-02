@@ -1,0 +1,158 @@
+<html>
+<head>
+	<title style>Kuri Odometry GUI-- September, 2019 </title>
+	<meta charset="UTF-8">
+	<style>
+		canvas{
+			border: 1px solid black;
+			background-color: black;
+		}
+
+	</style>
+</head>	
+
+<body onload ="Parent()">
+	<script type="text/javascript" src="js/eventemitter2.min.js"></script>
+	<script type="text/javascript" src="js/roslib.min.js"></script>
+	<script src="/home/logan/kineval-stencil/kineval/kineval_rosbridge.js"></script>
+	<script>
+	function Parent(){
+		console.log("Click white figure on the top-left to begin.");
+		mainCanvas.load();
+		tracker = new track(30, 50, "white");
+
+		click();
+	}
+
+	function click(){
+		window.addEventListener("click", getClickPosition, false);
+		function getClickPosition(e){
+			tracker.distanceX = e.clientX - (tracker.width / 2); //move tracker to near center of tracker; clientX gets horizontal coordinate of cursor
+			tracker.distanceY = e.clientY - (tracker.height / 2);
+
+		}
+	}
+
+	var mainCanvas = {
+		canvas : document.createElement("canvas"),
+		load: function(){
+			this.canvas.width = (window.innerWidth);
+			this.canvas.height = window.innerHeight;
+			this.ctx1 = this.canvas.getContext("2d");
+			document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+			this.interval = setInterval(moveTracker, 20);
+
+			window.addEventListener ("keydown", function(e){
+				console.log(e.keyCode);
+				mainCanvas.key = e.keyCode; //execute movement when key pressed
+			});
+			window.addEventListener ("keyup", function(e){
+					mainCanvas.key = false; //stop movement once key is released
+					});
+
+		},
+
+		clear: function(){
+			var width = this.canvas.width;
+			var height = this.canvas.height;
+			this.ctx1.setTransform(1, 0, 0, 1, 0, 0);
+			this.ctx1.clearRect(0, 0, width, height);
+			this.ctx1.transform(1, 0, 0, 1, width/2, height/2);
+			this.ctx1.transform(1, 0, 0, -1, 0, 0);
+		}
+	}
+
+	function track(width, height, color){ 
+		this.width = width; //30
+		this.height = height; //50
+		//distanceX = odomPosition.xPos;
+		//distanceY = odomPosition.yPos;
+		this.speed =  0;
+		this.rotation = 0; //initial angular position
+		this.rotationSpeed = 0 ;
+		this.update = function(C, scan){
+			//console.log(`These are the laser scan ranges ${JSON.stringify(scan)}`)
+			//console.log(JSON.stringify(C));
+			var ctx = mainCanvas.ctx1;
+			ctx.fillStyle = color;
+			ctx.beginPath();
+			ctx.moveTo(C[0][0], C[1][0]); //move figure to new vector position from matrix multiplication
+			ctx.lineTo(C[0][1], C[1][1]);
+			ctx.lineTo(C[0][2], C[1][2]);
+			ctx.lineTo(C[0][3], C[1][3]);
+			ctx.lineTo(C[0][4], C[1][4]);
+			ctx.lineTo(C[0][0], C[1][0]);
+			ctx.fill();
+			ctx.fillStyle = "blue";
+			ctx.fillRect(C[0][5], C[1][5], 5, 5); //put rectangle at min range of scan
+			ctx.fillRect(C[0][6], C[0][6], 5, 5); //rectangle at max range
+						//**ctx.restore()
+			for (var i = 0; i<scan.length; i++){
+				for (var j =0; j <scan[0].length; j++){
+						ctx.fillStyle = "red";
+						ctx.fillRect(scan[i][j], scan[i][j+1], 5, 5);
+				}
+			}		
+			this.newPosition = function(odomPosition){
+				//console.log(JSON.stringify(C));
+				distanceX = odomPosition.xPos;
+				distanceY = odomPosition.yPos;
+				this.rotation += this.rotationSpeed;
+				this.distanceX  += this.speed * Math.cos(this.rotation); //twist with respect to cosine and sine; 
+				this.distanceY += this.speed * Math.sin(this.rotation);
+			}
+		}
+	}
+
+	function moveTracker(){ //function to recognize keys from keyboard
+		mainCanvas.clear();
+		let coords = {
+        	p1x : 50, p1y : 0, 
+        	p2x : 15, p2y : -25,
+        	p3x : -15, p3y : -25, 
+        	p4x : -15, p4y : 25, 
+        	p5x : 15, p5y : 25
+    	}
+		tracker.speed = 0; //for linear speed
+		tracker.rotationSpeed = 0; //for angular speed
+		if (mainCanvas.key && mainCanvas.key == 37) { //left key; countercl. rotation
+			tracker.rotationSpeed = -.1/ (Math.PI);
+			rosCmdVel.publish(rosTwistLft);
+			//console.log('swinging anticlockwise');
+		}
+		if (mainCanvas.key && mainCanvas.key == 38) { //up key
+			tracker.speed = 3;
+			rosCmdVel.publish(rosTwistFwd);
+        	//console.log('moving forward');
+    	}
+		if (mainCanvas.key && mainCanvas.key == 39) { //right key; clockw. rotation
+			tracker.rotationSpeed = .1 / (Math.PI);
+			rosCmdVel.publish(rosTwistRht);
+        	//console.log('swinging clockwise');
+   		 }
+		if (mainCanvas.key && mainCanvas.key == 40) { //down key
+			tracker.speed= -3;
+			rosCmdVel.publish(rosTwistBwd);
+        	//console.log('moving backward');
+		}
+		//console.log(JSON.stringify(coords));
+		//console.log(`This is my scan scan scan ${JSON.stringify(scan)}`)
+    	//let matrixB = scanMatrix(scan, odomPosition);
+    	//console.log(`This is my scan matrix from B ${JSON.stringify(matrixB)}`);
+
+    	let conversion = laserConversion(scan_msg);
+    	let scan = arrayScan(scan_msg, odomPosition);
+		let C = matrix(coords, odomPosition, conversion, scan);
+		let lasArray = scanMatrix(odomPosition);
+		console.log(`These are the current scan coordinates ${JSON.stringify(lasArray)}`)
+		tracker.update(C, lasArray); //tracker.update(C, scan);
+		//tracker.update(D);
+
+		tracker.newPosition(odomPosition);
+
+	}
+		
+	</script>
+</body>
+
+</html>
